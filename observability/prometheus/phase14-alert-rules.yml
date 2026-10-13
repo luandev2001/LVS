@@ -1,0 +1,19 @@
+groups:
+  - name: enterprise-lab-phase14
+    rules:
+      - alert: EnterpriseLabHighHttp5xxRate
+        expr: sum(rate(http_server_requests_seconds_count{status=~"5.."}[5m])) / clamp_min(sum(rate(http_server_requests_seconds_count[5m])), 1) > 0.05
+        for: 3m
+        labels:
+          severity: warning
+        annotations:
+          summary: HTTP 5xx rate is above 5%
+          description: Inspect traces, service logs, DB pool saturation, and dependency health.
+      - alert: EnterpriseLabHighHttpP95
+        expr: histogram_quantile(0.95, sum by (le) (rate(http_server_requests_seconds_bucket[5m]))) > 1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: HTTP p95 latency is above one second
+          description: Correlate with request rate, Hikari active/pending connections, JVM, and Kafka lag.

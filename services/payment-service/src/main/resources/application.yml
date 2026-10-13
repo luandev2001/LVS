@@ -1,0 +1,88 @@
+server:
+  port: 8084
+
+spring:
+  application:
+    name: payment-service
+  datasource:
+    url: jdbc:postgresql://localhost:5436/payment_db
+    username: lab
+    password: lab
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  flyway:
+    enabled: true
+  kafka:
+    template:
+      observation-enabled: true
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      acks: all
+      retries: 3
+      properties:
+        enable.idempotence: true
+        max.in.flight.requests.per.connection: 5
+    consumer:
+      max-poll-records: ${KAFKA_MAX_POLL_RECORDS:20}
+      group-id: payment-event-consumer
+      enable-auto-commit: false
+      auto-offset-reset: earliest
+      properties:
+        isolation.level: read_committed
+        max.poll.interval.ms: ${KAFKA_MAX_POLL_INTERVAL_MS:300000}
+    listener:
+      ack-mode: manual
+      observation-enabled: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  metrics:
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+        http.client.requests: true
+        spring.kafka.listener: true
+    tags:
+      application: payment-service
+  tracing:
+    sampling:
+      probability: ${TRACING_SAMPLE_PROBABILITY:1.0}
+  otlp:
+    tracing:
+      endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT:http://localhost:4318/v1/traces}
+  observations:
+    key-values:
+      service: payment-service
+
+payment:
+  timeout-seconds: 2
+  timeout-scan-ms: 500
+  saga-timeout-scan-ms: ${SAGA_TIMEOUT_SCAN_MS:1000}
+  gateway:
+    webhook-secret: "change-me-local-only"
+  kafka:
+    topic: payment.events.v1
+    dlq-topic: payment.events.dlq.v1
+  outbox:
+    polling-ms: ${OUTBOX_POLLING_MS:500}
+    batch-size: ${OUTBOX_BATCH_SIZE:50}
+    publisher-concurrency: ${OUTBOX_PUBLISHER_CONCURRENCY:2}
+    stale-processing-ms: ${OUTBOX_STALE_PROCESSING_MS:10000}
+    simulate-crash-after-send: ${OUTBOX_SIMULATE_CRASH_AFTER_SEND:false}
+
+logging:
+  structured:
+    format:
+      console: ecs
+
+# Phase 12: consumer parallelism and poll/processing guardrails
+lab:
+  kafka:
+    consumer-concurrency: ${KAFKA_CONSUMER_CONCURRENCY:3}
+    max-poll-records: ${KAFKA_MAX_POLL_RECORDS:20}
+    max-poll-interval-ms: ${KAFKA_MAX_POLL_INTERVAL_MS:300000}

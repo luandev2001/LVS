@@ -1,0 +1,23 @@
+spring:
+  application:
+    name: facility-service
+
+server:
+  port: 0
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+# Phase 12: consumer parallelism and poll/processing guardrails
+lab:
+  kafka:
+    consumer-concurrency: ${KAFKA_CONSUMER_CONCURRENCY:3}
+    max-poll-records: ${KAFKA_MAX_POLL_RECORDS:20}
+    max-poll-interval-ms: ${KAFKA_MAX_POLL_INTERVAL_MS:300000}
