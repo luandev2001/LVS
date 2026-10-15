@@ -5,6 +5,7 @@ import com.example.lab.payment.domain.PaymentStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import jakarta.persistence.LockModeType;
+import org.springframework.data.jpa.repository.Query;
 
 import java.time.Instant;
 import java.util.List;
@@ -15,6 +16,7 @@ public interface PaymentRepository extends JpaRepository<Payment, UUID> {
     Optional<Payment> findByIdempotencyKey(String idempotencyKey);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select i from Payment i where i.id = :id")
     Optional<Payment> findByIdForUpdate(UUID id);
 
     long countByStatus(PaymentStatus status);
