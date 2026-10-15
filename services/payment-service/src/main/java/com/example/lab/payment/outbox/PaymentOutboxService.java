@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
-import java.util.UUID;
 
 @Service
 public class PaymentOutboxService {
@@ -50,8 +49,12 @@ public class PaymentOutboxService {
         }
     }
 
-    public long count(PaymentOutbox.Status status) { return repository.countByStatus(status); }
+    public long count(PaymentOutbox.Status status) {
+        return repository.countByStatus(status);
+    }
 
     @Transactional
-    public int recoverStale(Instant cutoff) { return repository.requeueStaleProcessing(cutoff); }
+    public int recoverStale(Instant cutoff) {
+        return repository.requeueStaleProcessing(cutoff);
+    }
 }

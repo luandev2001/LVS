@@ -33,11 +33,11 @@ public class InventoryCacheService {
     private final boolean invalidationEnabled;
 
     public InventoryCacheService(StringRedisTemplate redis, ObjectMapper objectMapper, MeterRegistry meterRegistry,
-                                  @Value("${cache.inventory.ttl-seconds:30}") long ttlSeconds,
-                                  @Value("${cache.inventory.lock-ttl-ms:5000}") long lockTtlMs,
-                                  @Value("${cache.inventory.lock-wait-ms:2000}") long lockWaitMs,
-                                  @Value("${cache.inventory.enabled:true}") boolean enabled,
-                                  @Value("${cache.inventory.invalidation-enabled:true}") boolean invalidationEnabled) {
+                                 @Value("${cache.inventory.ttl-seconds:30}") long ttlSeconds,
+                                 @Value("${cache.inventory.lock-ttl-ms:5000}") long lockTtlMs,
+                                 @Value("${cache.inventory.lock-wait-ms:2000}") long lockWaitMs,
+                                 @Value("${cache.inventory.enabled:true}") boolean enabled,
+                                 @Value("${cache.inventory.invalidation-enabled:true}") boolean invalidationEnabled) {
         this.redis = redis;
         this.objectMapper = objectMapper;
         this.meterRegistry = meterRegistry;
@@ -52,7 +52,10 @@ public class InventoryCacheService {
         if (!enabled) return Optional.empty();
         try {
             String json = redis.opsForValue().get(key);
-            if (json == null) { counter("inventory.cache.miss").increment(); return Optional.empty(); }
+            if (json == null) {
+                counter("inventory.cache.miss").increment();
+                return Optional.empty();
+            }
             counter("inventory.cache.hit").increment();
             return Optional.of(objectMapper.readValue(json, InventoryService.CachedInventoryPage.class));
         } catch (Exception e) {
@@ -82,7 +85,10 @@ public class InventoryCacheService {
     }
 
     public void invalidateWarehouse(String warehouseCode) {
-        if (!enabled || !invalidationEnabled) { counter("inventory.cache.invalidation.skipped").increment(); return; }
+        if (!enabled || !invalidationEnabled) {
+            counter("inventory.cache.invalidation.skipped").increment();
+            return;
+        }
         try {
             redis.opsForValue().increment(VERSION_PREFIX + warehouseCode);
             counter("inventory.cache.invalidation").increment();
@@ -92,7 +98,10 @@ public class InventoryCacheService {
     }
 
     public void invalidateItem(long inventoryId) {
-        if (!enabled || !invalidationEnabled) { counter("inventory.cache.item-invalidation.skipped").increment(); return; }
+        if (!enabled || !invalidationEnabled) {
+            counter("inventory.cache.item-invalidation.skipped").increment();
+            return;
+        }
         try {
             redis.delete(DATA_PREFIX + "item:" + inventoryId);
             counter("inventory.cache.item-invalidation").increment();
@@ -105,7 +114,10 @@ public class InventoryCacheService {
         if (!enabled) return Optional.empty();
         try {
             String json = redis.opsForValue().get(DATA_PREFIX + "item:" + inventoryId);
-            if (json == null) { counter("inventory.item-cache.miss").increment(); return Optional.empty(); }
+            if (json == null) {
+                counter("inventory.item-cache.miss").increment();
+                return Optional.empty();
+            }
             counter("inventory.item-cache.hit").increment();
             return Optional.of(objectMapper.readValue(json, InventoryService.InventoryView.class));
         } catch (Exception e) {
@@ -125,7 +137,7 @@ public class InventoryCacheService {
     }
 
     public LockAttempt tryAcquire(String cacheKey) {
-        if (!enabled) return LockAttempt.unavailable();
+        if (!enabled) return LockAttempt.ofUnavailable();
         String token = UUID.randomUUID().toString();
         try {
             Boolean acquired = redis.opsForValue().setIfAbsent(LOCK_PREFIX + cacheKey, token, lockTtl);
@@ -134,10 +146,10 @@ public class InventoryCacheService {
                 return LockAttempt.acquired(new LockHandle(cacheKey, token));
             }
             counter("inventory.cache.stampede.lock.contended").increment();
-            return LockAttempt.contended();
+            return LockAttempt.ofContended();
         } catch (RuntimeException e) {
             counter("inventory.cache.stampede.lock.error").increment();
-            return LockAttempt.unavailable();
+            return LockAttempt.ofUnavailable();
         }
     }
 
@@ -145,9 +157,16 @@ public class InventoryCacheService {
         long deadline = System.nanoTime() + lockWait.toNanos();
         while (System.nanoTime() < deadline) {
             Optional<InventoryService.CachedInventoryPage> value = get(cacheKey);
-            if (value.isPresent()) { counter("inventory.cache.stampede.wait.success").increment(); return value; }
-            try { Thread.sleep(25); }
-            catch (InterruptedException e) { Thread.currentThread().interrupt(); break; }
+            if (value.isPresent()) {
+                counter("inventory.cache.stampede.wait.success").increment();
+                return value;
+            }
+            try {
+                Thread.sleep(25);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
+            }
         }
         counter("inventory.cache.stampede.wait.timeout").increment();
         return Optional.empty();
@@ -162,16 +181,31 @@ public class InventoryCacheService {
     }
 
     public void resetWarehouseVersion(String warehouseCode) {
-        try { redis.delete(VERSION_PREFIX + warehouseCode); }
-        catch (RuntimeException e) { counter("inventory.cache.version.reset.error").increment(); }
+        try {
+            redis.delete(VERSION_PREFIX + warehouseCode);
+        } catch (RuntimeException e) {
+            counter("inventory.cache.version.reset.error").increment();
+        }
     }
 
-    public record LockHandle(String cacheKey, String token) {}
+    public record LockHandle(String cacheKey, String token) {
+    }
+
     public record LockAttempt(LockHandle handle, boolean contended, boolean available) {
-        static LockAttempt acquired(LockHandle h) { return new LockAttempt(h, false, true); }
-        static LockAttempt contended() { return new LockAttempt(null, true, true); }
-        static LockAttempt unavailable() { return new LockAttempt(null, false, false); }
+        public static LockAttempt acquired(LockHandle h) {
+            return new LockAttempt(h, false, true);
+        }
+
+        public static LockAttempt ofContended() {
+            return new LockAttempt(null, true, true);
+        }
+
+        public static LockAttempt ofUnavailable() {
+            return new LockAttempt(null, false, false);
+        }
     }
 
-    private io.micrometer.core.instrument.Counter counter(String name) { return meterRegistry.counter(name); }
+    private io.micrometer.core.instrument.Counter counter(String name) {
+        return meterRegistry.counter(name);
+    }
 }

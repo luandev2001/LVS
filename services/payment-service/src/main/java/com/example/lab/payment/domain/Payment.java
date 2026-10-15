@@ -1,14 +1,19 @@
 package com.example.lab.payment.domain;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
 
+@Getter
+@Setter
 @Entity
 @Table(name = "payments", uniqueConstraints = {
-    @UniqueConstraint(name = "uk_payment_idempotency_key", columnNames = "idempotency_key"),
-    @UniqueConstraint(name = "uk_payment_gateway_reference", columnNames = "gateway_reference")
+        @UniqueConstraint(name = "uk_payment_idempotency_key", columnNames = "idempotency_key"),
+        @UniqueConstraint(name = "uk_payment_gateway_reference", columnNames = "gateway_reference")
 })
 public class Payment {
     @Id
@@ -49,18 +54,22 @@ public class Payment {
     @Column(name = "callback_received_at")
     private Instant callbackReceivedAt;
 
-    @Column(name = "saga_id") private UUID sagaId;
-    @Column(name = "inventory_id") private Long inventoryId;
-    @Column(name = "inventory_quantity") private Long inventoryQuantity;
-    @Column(name = "saga_failure_mode", length = 50) private String sagaFailureMode;
-    @Column(name = "saga_status", length = 40) private String sagaStatus;
-    @Column(name = "saga_updated_at") private Instant sagaUpdatedAt;
+    @Column(name = "saga_id")
+    private UUID sagaId;
+    @Column(name = "inventory_id")
+    private Long inventoryId;
+    @Column(name = "inventory_quantity")
+    private Long inventoryQuantity;
+    @Column(name = "saga_failure_mode", length = 50)
+    private String sagaFailureMode;
+    @Column(name = "saga_status", length = 40)
+    private String sagaStatus;
+    @Column(name = "saga_updated_at")
+    private Instant sagaUpdatedAt;
 
     @Version
     @Column(nullable = false)
     private long version;
-
-    protected Payment() {}
 
     public static Payment create(String orderReference, BigDecimal amount, String currency, String idempotencyKey, String requestFingerprint) {
         Payment p = new Payment();
@@ -105,44 +114,54 @@ public class Payment {
     }
 
     public void refund() {
-        if (status != PaymentStatus.SUCCEEDED) throw new IllegalStateException("only succeeded payment can be refunded");
+        if (status != PaymentStatus.SUCCEEDED)
+            throw new IllegalStateException("only succeeded payment can be refunded");
         status = PaymentStatus.REFUNDED;
         touch();
     }
 
     public void initializeSaga(UUID sagaId, Long inventoryId, long quantity, String failureMode) {
-        this.sagaId = sagaId; this.inventoryId = inventoryId; this.inventoryQuantity = quantity;
-        this.sagaFailureMode = failureMode; this.sagaStatus = "WAITING_ACCOUNTING"; this.sagaUpdatedAt = Instant.now();
+        this.sagaId = sagaId;
+        this.inventoryId = inventoryId;
+        this.inventoryQuantity = quantity;
+        this.sagaFailureMode = failureMode;
+        this.sagaStatus = "WAITING_ACCOUNTING";
+        this.sagaUpdatedAt = Instant.now();
     }
-    public void sagaAccountingPosted() { this.sagaStatus = "WAITING_INVENTORY"; this.sagaUpdatedAt = Instant.now(); }
-    public void sagaInventoryReserved() { this.sagaStatus = "COMPLETED"; this.sagaUpdatedAt = Instant.now(); }
-    public void sagaCompensating() { this.sagaStatus = "COMPENSATING"; this.sagaUpdatedAt = Instant.now(); }
-    public void sagaCompensated() { this.sagaStatus = "COMPENSATED"; this.sagaUpdatedAt = Instant.now(); }
-    public void sagaTimedOut() { this.sagaStatus = "TIMED_OUT"; this.sagaUpdatedAt = Instant.now(); }
+
+    public void sagaAccountingPosted() {
+        this.sagaStatus = "WAITING_INVENTORY";
+        this.sagaUpdatedAt = Instant.now();
+    }
+
+    public void sagaInventoryReserved() {
+        this.sagaStatus = "COMPLETED";
+        this.sagaUpdatedAt = Instant.now();
+    }
+
+    public void sagaCompensating() {
+        this.sagaStatus = "COMPENSATING";
+        this.sagaUpdatedAt = Instant.now();
+    }
+
+    public void sagaCompensated() {
+        this.sagaStatus = "COMPENSATED";
+        this.sagaUpdatedAt = Instant.now();
+    }
+
+    public void sagaTimedOut() {
+        this.sagaStatus = "TIMED_OUT";
+        this.sagaUpdatedAt = Instant.now();
+    }
 
     private void requireOneOf(PaymentStatus... allowed) {
         for (PaymentStatus candidate : allowed) if (status == candidate) return;
         throw new IllegalStateException("invalid payment state transition from " + status);
     }
 
-    private void touch() { updatedAt = Instant.now(); }
+    private void touch() {
+        updatedAt = Instant.now();
+    }
 
-    public UUID getId() { return id; }
-    public String getOrderReference() { return orderReference; }
-    public BigDecimal getAmount() { return amount; }
-    public String getCurrency() { return currency; }
-    public String getIdempotencyKey() { return idempotencyKey; }
-    public String getRequestFingerprint() { return requestFingerprint; }
-    public String getGatewayReference() { return gatewayReference; }
-    public PaymentStatus getStatus() { return status; }
-    public int getAttempt() { return attempt; }
-    public Instant getCreatedAt() { return createdAt; }
-    public Instant getUpdatedAt() { return updatedAt; }
-    public Instant getCallbackReceivedAt() { return callbackReceivedAt; }
-    public long getVersion() { return version; }
-    public UUID getSagaId(){return sagaId;} public Long getInventoryId(){return inventoryId;}
-    public Long getInventoryQuantity(){return inventoryQuantity;} public String getSagaFailureMode(){return sagaFailureMode;}
-    public String getSagaStatus(){return sagaStatus;} public Instant getSagaUpdatedAt(){return sagaUpdatedAt;}
-
-    public enum CallbackResult { APPLIED, DUPLICATE, IGNORED_REFUNDED, IGNORED_INVALID_STATE }
+    public enum CallbackResult {APPLIED, DUPLICATE, IGNORED_REFUNDED, IGNORED_INVALID_STATE}
 }

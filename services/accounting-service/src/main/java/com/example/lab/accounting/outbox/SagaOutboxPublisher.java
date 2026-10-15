@@ -1,3 +1,60 @@
 package com.example.lab.accounting.outbox;
-import com.example.lab.payment.kafka.PaymentEvent; import com.fasterxml.jackson.databind.ObjectMapper; import org.springframework.beans.factory.annotation.Value; import org.springframework.kafka.core.KafkaTemplate; import org.springframework.scheduling.annotation.Scheduled; import org.springframework.stereotype.Component; import org.springframework.transaction.support.TransactionTemplate; import java.time.Instant; import java.util.*;
-@Component public class SagaOutboxPublisher { final SagaOutboxRepository repo; final KafkaTemplate<String,PaymentEvent> kafka; final ObjectMapper mapper; final TransactionTemplate tx; final int batch; final long staleMs; public SagaOutboxPublisher(SagaOutboxRepository r,KafkaTemplate<String,PaymentEvent> k,ObjectMapper m,org.springframework.transaction.PlatformTransactionManager tm,@Value("${saga.outbox.batch-size:50}")int b,@Value("${saga.outbox.stale-processing-ms:10000}")long stale){repo=r;kafka=k;mapper=m;tx=new TransactionTemplate(tm);batch=b;staleMs=stale;} @Scheduled(fixedDelayString="${saga.outbox.polling-ms:500}") public void poll(){tx.executeWithoutResult(s->repo.requeueStale(Instant.now().minusMillis(staleMs))); List<SagaOutbox> rows=tx.execute(s->{List<SagaOutbox>x=repo.lockBatch(batch);x.forEach(SagaOutbox::processing);return x;}); if(rows==null)return; for(SagaOutbox r:rows){try{PaymentEvent e=mapper.readValue(r.getPayload(),PaymentEvent.class);kafka.send("payment.events.v1",r.getMessageKey(),e).get();tx.executeWithoutResult(s->{SagaOutbox x=repo.findById(r.getId()).orElseThrow();x.published();repo.save(x);});}catch(Exception ex){tx.executeWithoutResult(s->{SagaOutbox x=repo.findById(r.getId()).orElseThrow();x.failed(ex.getMessage());repo.save(x);});}}} }
+
+import com.example.lab.accounting.repository.SagaOutboxRepository;
+import com.example.lab.payment.kafka.PaymentEvent;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.support.TransactionTemplate;
+
+import java.time.Instant;
+import java.util.*;
+
+@Component
+public class SagaOutboxPublisher {
+    final SagaOutboxRepository repo;
+    final KafkaTemplate<String, PaymentEvent> kafka;
+    final ObjectMapper mapper;
+    final TransactionTemplate tx;
+    final int batch;
+    final long staleMs;
+
+    public SagaOutboxPublisher(SagaOutboxRepository r, KafkaTemplate<String, PaymentEvent> k, ObjectMapper m, org.springframework.transaction.PlatformTransactionManager tm, @Value("${saga.outbox.batch-size:50}") int b, @Value("${saga.outbox.stale-processing-ms:10000}") long stale) {
+        repo = r;
+        kafka = k;
+        mapper = m;
+        tx = new TransactionTemplate(tm);
+        batch = b;
+        staleMs = stale;
+    }
+
+    @Scheduled(fixedDelayString = "${saga.outbox.polling-ms:500}")
+    public void poll() {
+        tx.executeWithoutResult(s -> repo.requeueStale(Instant.now().minusMillis(staleMs)));
+        List<SagaOutbox> rows = tx.execute(s -> {
+            List<SagaOutbox> x = repo.lockBatch(batch);
+            x.forEach(SagaOutbox::processing);
+            return x;
+        });
+        if (rows == null) return;
+        for (SagaOutbox r : rows) {
+            try {
+                PaymentEvent e = mapper.readValue(r.getPayload(), PaymentEvent.class);
+                kafka.send("payment.events.v1", r.getMessageKey(), e).get();
+                tx.executeWithoutResult(s -> {
+                    SagaOutbox x = repo.findById(r.getId()).orElseThrow();
+                    x.published();
+                    repo.save(x);
+                });
+            } catch (Exception ex) {
+                tx.executeWithoutResult(s -> {
+                    SagaOutbox x = repo.findById(r.getId()).orElseThrow();
+                    x.failed(ex.getMessage());
+                    repo.save(x);
+                });
+            }
+        }
+    }
+}

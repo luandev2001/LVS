@@ -32,10 +32,14 @@ public class PaymentOutboxPublisher {
                                   @Value("${payment.outbox.publisher-concurrency:2}") int concurrency,
                                   @Value("${payment.outbox.stale-processing-ms:10000}") long staleProcessingMs,
                                   @Value("${payment.outbox.simulate-crash-after-send:false}") boolean simulateCrashAfterSend) {
-        this.repository = repository; this.kafkaTemplate = kafkaTemplate; this.objectMapper = objectMapper;
+        this.repository = repository;
+        this.kafkaTemplate = kafkaTemplate;
+        this.objectMapper = objectMapper;
         this.transactionTemplate = new TransactionTemplate(transactionManager);
-        this.batchSize = batchSize; this.concurrency = concurrency;
-        this.staleProcessingMs = staleProcessingMs; this.simulateCrashAfterSend = simulateCrashAfterSend;
+        this.batchSize = batchSize;
+        this.concurrency = concurrency;
+        this.staleProcessingMs = staleProcessingMs;
+        this.simulateCrashAfterSend = simulateCrashAfterSend;
     }
 
     @Scheduled(fixedDelayString = "${payment.outbox.polling-ms:500}")
@@ -91,9 +95,13 @@ public class PaymentOutboxPublisher {
                 Instant.now().minusMillis(staleProcessingMs)));
     }
 
-    public long count(PaymentOutbox.Status status) { return repository.countByStatus(status); }
+    public long count(PaymentOutbox.Status status) {
+        return repository.countByStatus(status);
+    }
 
     private static class SimulatedPublisherCrash extends RuntimeException {
-        SimulatedPublisherCrash(String message) { super(message); }
+        SimulatedPublisherCrash(String message) {
+            super(message);
+        }
     }
 }

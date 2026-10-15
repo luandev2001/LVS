@@ -88,8 +88,10 @@ public class PaymentService {
 
     private void validateCreateInput(BigDecimal amount, String currency, String idempotencyKey) {
         if (amount == null || amount.signum() <= 0) throw new IllegalArgumentException("amount must be positive");
-        if (currency == null || currency.length() != 3) throw new IllegalArgumentException("currency must be ISO-4217 style 3 letters");
-        if (idempotencyKey == null || idempotencyKey.isBlank()) throw new IllegalArgumentException("Idempotency-Key must not be blank");
+        if (currency == null || currency.length() != 3)
+            throw new IllegalArgumentException("currency must be ISO-4217 style 3 letters");
+        if (idempotencyKey == null || idempotencyKey.isBlank())
+            throw new IllegalArgumentException("Idempotency-Key must not be blank");
     }
 
     private String fingerprint(String orderReference, BigDecimal amount, String currency, Long inventoryId, long quantity, String sagaFailureMode) {
@@ -120,7 +122,9 @@ public class PaymentService {
         if (TransactionSynchronizationManager.isSynchronizationActive()) {
             TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
                 @Override
-                public void afterCommit() { dispatch.run(); }
+                public void afterCommit() {
+                    dispatch.run();
+                }
             });
         } else {
             dispatch.run();
@@ -155,7 +159,12 @@ public class PaymentService {
     public void markExpiredPayments() {
         Instant cutoff = Instant.now().minusSeconds(timeoutSeconds);
         repository.findByStatusAndUpdatedAtBefore(com.example.lab.payment.domain.PaymentStatus.PENDING, cutoff)
-                .forEach(p -> { if (p.timeoutIfExpired(Instant.now(), timeoutSeconds)) { repository.save(p); outboxService.enqueue(p, "PAYMENT_TIMED_OUT"); } });
+                .forEach(p -> {
+                    if (p.timeoutIfExpired(Instant.now(), timeoutSeconds)) {
+                        repository.save(p);
+                        outboxService.enqueue(p, "PAYMENT_TIMED_OUT");
+                    }
+                });
     }
 
     @Transactional
@@ -170,19 +179,29 @@ public class PaymentService {
     @Transactional
     public void handleSagaEvent(com.example.lab.payment.kafka.PaymentEvent event) {
         Payment payment = repository.findByIdForUpdate(event.paymentId()).orElseThrow(() -> new PaymentNotFoundException(event.paymentId()));
-        if (payment.getSagaId() == null || event.sagaId() == null || !payment.getSagaId().equals(event.sagaId())) return;
+        if (payment.getSagaId() == null || event.sagaId() == null || !payment.getSagaId().equals(event.sagaId()))
+            return;
         switch (event.eventType()) {
-            case "ACCOUNTING_POSTED" -> { payment.sagaAccountingPosted(); repository.save(payment); }
-            case "INVENTORY_RESERVED" -> { payment.sagaInventoryReserved(); repository.save(payment); }
+            case "ACCOUNTING_POSTED" -> {
+                payment.sagaAccountingPosted();
+                repository.save(payment);
+            }
+            case "INVENTORY_RESERVED" -> {
+                payment.sagaInventoryReserved();
+                repository.save(payment);
+            }
             case "INVENTORY_RESERVATION_FAILED" -> {
                 if (payment.getStatus() == PaymentStatus.SUCCEEDED) payment.refund();
-                payment.sagaCompensating(); repository.save(payment);
+                payment.sagaCompensating();
+                repository.save(payment);
             }
             case "ACCOUNTING_REVERSED" -> {
-                payment.sagaCompensated(); repository.save(payment);
+                payment.sagaCompensated();
+                repository.save(payment);
                 outboxService.enqueue(payment, "PAYMENT_COMPENSATED");
             }
-            default -> {}
+            default -> {
+            }
         }
     }
 
@@ -191,18 +210,28 @@ public class PaymentService {
     public void markSagaTimeouts() {
         Instant cutoff = Instant.now().minusSeconds(10);
         repository.findBySagaStatusInAndSagaUpdatedAtBefore(java.util.List.of("WAITING_ACCOUNTING", "WAITING_INVENTORY"), cutoff)
-                .forEach(p -> { p.sagaTimedOut(); repository.save(p); outboxService.enqueue(p, "PAYMENT_SAGA_TIMED_OUT"); });
+                .forEach(p -> {
+                    p.sagaTimedOut();
+                    repository.save(p);
+                    outboxService.enqueue(p, "PAYMENT_SAGA_TIMED_OUT");
+                });
     }
 
-    public Payment get(UUID id) { return repository.findById(id).orElseThrow(() -> new PaymentNotFoundException(id)); }
+    public Payment get(UUID id) {
+        return repository.findById(id).orElseThrow(() -> new PaymentNotFoundException(id));
+    }
 
     @Transactional
     public void publishDuplicateEvent(UUID id) {
         outboxService.enqueueDuplicate(get(id));
     }
 
-    public record CallbackResult(String status, String outcome, boolean applied) {}
+    public record CallbackResult(String status, String outcome, boolean applied) {
+    }
+
     public static class PaymentNotFoundException extends RuntimeException {
-        public PaymentNotFoundException(UUID id) { super("payment not found: " + id); }
+        public PaymentNotFoundException(UUID id) {
+            super("payment not found: " + id);
+        }
     }
 }

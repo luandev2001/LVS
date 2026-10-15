@@ -2,18 +2,18 @@ package com.example.lab.payment.controller;
 
 import com.example.lab.payment.outbox.PaymentOutbox;
 import com.example.lab.payment.outbox.PaymentOutboxPublisher;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
 import java.util.Map;
 
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/outbox")
 public class OutboxController {
     private final PaymentOutboxPublisher publisher;
-
-    public OutboxController(PaymentOutboxPublisher publisher) { this.publisher = publisher; }
 
     @GetMapping("/stats")
     public Map<String, Long> stats() {

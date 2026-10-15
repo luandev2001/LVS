@@ -25,7 +25,9 @@ public class SimulatedPaymentGateway {
         this.secret = secret;
     }
 
-    public String createGatewayTransaction() { return "GW-" + UUID.randomUUID(); }
+    public String createGatewayTransaction() {
+        return "GW-" + UUID.randomUUID();
+    }
 
     public void dispatch(UUID paymentId, String reference, BigDecimal amount, String currency, GatewayMode mode,
                          Consumer<GatewayCallback> callbackConsumer) {
@@ -47,7 +49,7 @@ public class SimulatedPaymentGateway {
     private void schedule(UUID paymentId, String reference, BigDecimal amount, String currency, boolean success, long delayMs,
                           Consumer<GatewayCallback> callbackConsumer) {
         scheduler.schedule(() -> callbackConsumer.accept(
-                new GatewayCallback(paymentId, reference, amount, currency, success, sign(paymentId, reference, amount, currency, success))),
+                        new GatewayCallback(paymentId, reference, amount, currency, success, sign(paymentId, reference, amount, currency, success))),
                 delayMs, TimeUnit.MILLISECONDS);
     }
 
@@ -68,5 +70,7 @@ public class SimulatedPaymentGateway {
         return MessageDigest.isEqual(expected, actual);
     }
 
-    public record GatewayCallback(UUID paymentId, String gatewayReference, BigDecimal amount, String currency, boolean success, String signature) {}
+    public record GatewayCallback(UUID paymentId, String gatewayReference, BigDecimal amount, String currency,
+                                  boolean success, String signature) {
+    }
 }

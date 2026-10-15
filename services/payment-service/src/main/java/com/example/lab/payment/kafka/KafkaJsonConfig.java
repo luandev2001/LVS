@@ -9,8 +9,10 @@ import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.core.ProducerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.beans.factory.annotation.Value;
+
 import java.util.HashMap;
 import java.util.Map;
+
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 
@@ -19,7 +21,7 @@ public class KafkaJsonConfig {
     @Bean
     ProducerFactory<String, PaymentEvent> paymentProducerFactory(
             @Value("${spring.kafka.bootstrap-servers}") String servers) {
-        Map<String,Object> props = new HashMap<>();
+        Map<String, Object> props = new HashMap<>();
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, servers);
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, org.apache.kafka.common.serialization.StringSerializer.class);
         props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
@@ -38,7 +40,7 @@ public class KafkaJsonConfig {
     @Bean
     ConsumerFactory<String, PaymentEvent> paymentConsumerFactory(
             @Value("${spring.kafka.bootstrap-servers}") String servers) {
-        Map<String,Object> props = new HashMap<>();
+        Map<String, Object> props = new HashMap<>();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, servers);
         props.put(ConsumerConfig.GROUP_ID_CONFIG, "payment-event-consumer");
         props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);

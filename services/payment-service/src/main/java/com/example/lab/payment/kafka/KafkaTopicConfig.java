@@ -11,6 +11,7 @@ public class KafkaTopicConfig {
     NewTopic paymentEventsTopic(@Value("${payment.kafka.topic:payment.events.v1}") String topic) {
         return new NewTopic(topic, 3, (short) 1);
     }
+
     @Bean
     NewTopic paymentEventsDlqTopic(@Value("${payment.kafka.dlq-topic:payment.events.dlq.v1}") String topic) {
         return new NewTopic(topic, 3, (short) 1);

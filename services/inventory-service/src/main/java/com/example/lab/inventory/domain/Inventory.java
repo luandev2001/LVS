@@ -1,8 +1,13 @@
 package com.example.lab.inventory.domain;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.time.Instant;
 
+@Getter
+@Setter
 @Entity
 @Table(name = "inventory")
 public class Inventory {
@@ -30,8 +35,6 @@ public class Inventory {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
-    protected Inventory() {}
-
     public Inventory(Product product, String warehouseCode, long quantity) {
         this.product = product;
         this.warehouseCode = warehouseCode;
@@ -41,14 +44,10 @@ public class Inventory {
 
     @PrePersist
     @PreUpdate
-    void touch() { updatedAt = Instant.now(); }
+    void touch() {
+        updatedAt = Instant.now();
+    }
 
-    public Long getId() { return id; }
-    public Product getProduct() { return product; }
-    public String getWarehouseCode() { return warehouseCode; }
-    public long getQuantity() { return quantity; }
-    public long getReservedQuantity() { return reservedQuantity; }
-    public long getVersion() { return version; }
     public void reserve(long amount) {
         if (amount <= 0) throw new IllegalArgumentException("amount must be positive");
         if (quantity - reservedQuantity < amount) throw new IllegalStateException("insufficient available stock");

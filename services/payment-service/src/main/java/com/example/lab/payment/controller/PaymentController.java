@@ -3,17 +3,18 @@ package com.example.lab.payment.controller;
 import com.example.lab.payment.domain.GatewayMode;
 import com.example.lab.payment.domain.Payment;
 import com.example.lab.payment.service.PaymentService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.util.UUID;
 
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/payments")
 public class PaymentController {
     private final PaymentService service;
-    public PaymentController(PaymentService service) { this.service = service; }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)

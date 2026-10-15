@@ -1,5 +1,6 @@
 package com.example.lab.inventory.resilience;
 
+import com.example.lab.inventory.service.ResilienceLabService;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 

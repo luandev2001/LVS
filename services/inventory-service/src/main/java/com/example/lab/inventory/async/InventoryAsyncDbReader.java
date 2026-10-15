@@ -10,7 +10,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-/** One Spring proxy invocation = one bounded DB transaction/connection for the page read. */
+/**
+ * One Spring proxy invocation = one bounded DB transaction/connection for the page read.
+ */
 @Service
 public class InventoryAsyncDbReader {
     private final InventoryRepository repository;

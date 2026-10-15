@@ -12,6 +12,7 @@ public class AccountingMetrics {
     private final Counter journalCreated;
     private final Counter journalRejected;
     private final Timer eventProcessing;
+
     public AccountingMetrics(MeterRegistry registry) {
         eventsReceived = registry.counter("accounting.kafka.events.received");
         eventsDuplicate = registry.counter("accounting.kafka.events.duplicate");
@@ -19,7 +20,28 @@ public class AccountingMetrics {
         journalRejected = registry.counter("accounting.journal.rejected");
         eventProcessing = registry.timer("accounting.kafka.event.processing");
     }
-    public void received(){eventsReceived.increment();} public void duplicate(){eventsDuplicate.increment();}
-    public void journalCreated(){journalCreated.increment();} public void rejected(){journalRejected.increment();}
-    public Timer.Sample start(){return Timer.start();} public void stop(Timer.Sample sample){sample.stop(eventProcessing);}
+
+    public void received() {
+        eventsReceived.increment();
+    }
+
+    public void duplicate() {
+        eventsDuplicate.increment();
+    }
+
+    public void journalCreated() {
+        journalCreated.increment();
+    }
+
+    public void rejected() {
+        journalRejected.increment();
+    }
+
+    public Timer.Sample start() {
+        return Timer.start();
+    }
+
+    public void stop(Timer.Sample sample) {
+        sample.stop(eventProcessing);
+    }
 }

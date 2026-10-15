@@ -47,7 +47,9 @@ public class InventoryService {
         return inventoryRepository.findAllByWarehouseCodeWithProduct(warehouseCode, pageable).map(this::toView);
     }
 
-    /** Cache-aside: read Redis first, then optimized PostgreSQL query on miss. */
+    /**
+     * Cache-aside: read Redis first, then optimized PostgreSQL query on miss.
+     */
     @Timed(value = "inventory.cache.api", extraTags = {"mode", "cache-aside"})
     public CachedInventoryPage findByWarehouseCached(String warehouseCode, int page, int size, StampedeProtection protection) {
         String key = cache.warehouseKey(warehouseCode, page, size);
@@ -80,8 +82,11 @@ public class InventoryService {
 
     private CachedInventoryPage loadAndCache(String warehouseCode, int page, int size, boolean simulateDelay) {
         if (simulateDelay && simulatedDbDelayMs > 0) {
-            try { Thread.sleep(simulatedDbDelayMs); }
-            catch (InterruptedException e) { Thread.currentThread().interrupt(); }
+            try {
+                Thread.sleep(simulatedDbDelayMs);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
         }
         Page<InventoryView> result = inventoryRepository
                 .findAllByWarehouseCodeWithProduct(warehouseCode, org.springframework.data.domain.PageRequest.of(page, size))
@@ -110,7 +115,9 @@ public class InventoryService {
     }
 
     @Transactional
-    public void reserveWithoutLock(long inventoryId, long amount) { reserveWithoutLock(inventoryId, amount, true); }
+    public void reserveWithoutLock(long inventoryId, long amount) {
+        reserveWithoutLock(inventoryId, amount, true);
+    }
 
     @Transactional
     public void reserveWithoutLock(long inventoryId, long amount, boolean invalidateCache) {
@@ -121,19 +128,26 @@ public class InventoryService {
     }
 
     @Transactional
-    public void reserveOptimistic(long inventoryId, long amount) { reserveOptimistic(inventoryId, amount, true); }
+    public void reserveOptimistic(long inventoryId, long amount) {
+        reserveOptimistic(inventoryId, amount, true);
+    }
 
     @Transactional
     public void reserveOptimistic(long inventoryId, long amount, boolean invalidateCache) {
         Inventory inventory = inventoryRepository.findById(inventoryId).orElseThrow();
         inventory.reserve(amount);
-        try { inventoryRepository.saveAndFlush(inventory); }
-        catch (OptimisticLockingFailureException e) { throw new ConcurrentReservationException("optimistic locking conflict", e); }
+        try {
+            inventoryRepository.saveAndFlush(inventory);
+        } catch (OptimisticLockingFailureException e) {
+            throw new ConcurrentReservationException("optimistic locking conflict", e);
+        }
         invalidateAfterMutation(inventoryId, inventory.getWarehouseCode(), invalidateCache);
     }
 
     @Transactional
-    public void reservePessimistic(long inventoryId, long amount) { reservePessimistic(inventoryId, amount, true); }
+    public void reservePessimistic(long inventoryId, long amount) {
+        reservePessimistic(inventoryId, amount, true);
+    }
 
     @Transactional
     public void reservePessimistic(long inventoryId, long amount, boolean invalidateCache) {
@@ -144,7 +158,9 @@ public class InventoryService {
     }
 
     @Transactional
-    public void reserveAtomically(long inventoryId, long amount) { reserveAtomically(inventoryId, amount, true); }
+    public void reserveAtomically(long inventoryId, long amount) {
+        reserveAtomically(inventoryId, amount, true);
+    }
 
     @Transactional
     public void reserveAtomically(long inventoryId, long amount, boolean invalidateCache) {
@@ -156,7 +172,9 @@ public class InventoryService {
         invalidateAfterMutation(inventoryId, warehouse, invalidateCache);
     }
 
-    public void invalidateWarehouseCacheForExperiment(String warehouseCode) { cache.invalidateWarehouse(warehouseCode); }
+    public void invalidateWarehouseCacheForExperiment(String warehouseCode) {
+        cache.invalidateWarehouse(warehouseCode);
+    }
 
     private void invalidateAfterMutation(long inventoryId, String warehouseCode, boolean invalidateCache) {
         if (!invalidateCache) return;
@@ -167,7 +185,10 @@ public class InventoryService {
         if (org.springframework.transaction.support.TransactionSynchronizationManager.isSynchronizationActive()) {
             org.springframework.transaction.support.TransactionSynchronizationManager.registerSynchronization(
                     new org.springframework.transaction.support.TransactionSynchronization() {
-                        @Override public void afterCommit() { invalidation.run(); }
+                        @Override
+                        public void afterCommit() {
+                            invalidation.run();
+                        }
                     });
         } else {
             invalidation.run();
@@ -181,12 +202,21 @@ public class InventoryService {
     }
 
     public record InventoryView(Long inventoryId, Long productId, String sku, String productName,
-                                String warehouseCode, long quantity, long reservedQuantity, long version) {}
+                                String warehouseCode, long quantity, long reservedQuantity, long version) {
+    }
+
     public record CachedInventoryPage(List<InventoryView> content, int page, int size,
-                                      long totalElements, int totalPages) {}
-    public record KeysetPage(List<InventoryView> content, Long nextCursor, boolean hasNext) {}
-    public enum StampedeProtection { NAIVE, LOCKED }
+                                      long totalElements, int totalPages) {
+    }
+
+    public record KeysetPage(List<InventoryView> content, Long nextCursor, boolean hasNext) {
+    }
+
+    public enum StampedeProtection {NAIVE, LOCKED}
+
     public static class ConcurrentReservationException extends RuntimeException {
-        public ConcurrentReservationException(String message, Throwable cause) { super(message, cause); }
+        public ConcurrentReservationException(String message, Throwable cause) {
+            super(message, cause);
+        }
     }
 }

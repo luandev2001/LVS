@@ -1,8 +1,13 @@
 package com.example.lab.inventory.domain;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.time.Instant;
 
+@Getter
+@Setter
 @Entity
 @Table(name = "product")
 public class Product {
@@ -25,8 +30,6 @@ public class Product {
     @Column(nullable = false)
     private Instant createdAt;
 
-    protected Product() {}
-
     public Product(String sku, String name, String categoryCode) {
         this.sku = sku;
         this.name = name;
@@ -38,11 +41,4 @@ public class Product {
     void prePersist() {
         if (createdAt == null) createdAt = Instant.now();
     }
-
-    public Long getId() { return id; }
-    public String getSku() { return sku; }
-    public String getName() { return name; }
-    public String getCategoryCode() { return categoryCode; }
-    public boolean isActive() { return active; }
-    public Instant getCreatedAt() { return createdAt; }
 }

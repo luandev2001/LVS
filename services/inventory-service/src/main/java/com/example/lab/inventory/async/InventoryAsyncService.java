@@ -18,8 +18,8 @@ public class InventoryAsyncService {
     private final MeterRegistry metrics;
 
     public InventoryAsyncService(InventoryAsyncDbReader dbReader,
-                                  @Qualifier("inventoryAsyncExecutor") Executor executor,
-                                  MeterRegistry metrics) {
+                                 @Qualifier("inventoryAsyncExecutor") Executor executor,
+                                 MeterRegistry metrics) {
         this.dbReader = dbReader;
         this.executor = executor;
         this.metrics = metrics;
@@ -57,7 +57,9 @@ public class InventoryAsyncService {
         });
     }
 
-    /** Sequential control group: same DB work, one query after another. */
+    /**
+     * Sequential control group: same DB work, one query after another.
+     */
     public AsyncInventoryResult fetchPagesSequential(String warehouseCode, int pages, int size) {
         long started = System.nanoTime();
         List<InventoryService.InventoryView> rows = new ArrayList<>();
@@ -80,8 +82,11 @@ public class InventoryAsyncService {
         return -1;
     }
 
-    public record PageChunk(int page, List<InventoryService.InventoryView> rows) {}
+    public record PageChunk(int page, List<InventoryService.InventoryView> rows) {
+    }
+
     public record AsyncInventoryResult(String warehouseCode, int pages, int size,
-                                        List<InventoryService.InventoryView> content,
-                                        long elapsedMs, int activeWorkersAtCompletion) {}
+                                       List<InventoryService.InventoryView> content,
+                                       long elapsedMs, int activeWorkersAtCompletion) {
+    }
 }
