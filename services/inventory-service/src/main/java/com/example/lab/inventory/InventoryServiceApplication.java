@@ -1,4 +1,4 @@
-package com.example.lab;
+package com.example.lab.inventory;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -6,6 +6,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
 @EnableScheduling
-public class PaymentServiceApplication {
-    public static void main(String[] args) { SpringApplication.run(PaymentServiceApplication.class, args); }
+public class InventoryServiceApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(InventoryServiceApplication.class, args);
+    }
 }

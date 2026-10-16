@@ -1,4 +1,4 @@
-package com.example.lab.observability;
+package com.example.lab.accounting.config;
 
 import io.micrometer.observation.ObservationRegistry;
 import io.micrometer.observation.aop.ObservedAspect;

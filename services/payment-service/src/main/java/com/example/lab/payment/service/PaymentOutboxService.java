@@ -1,8 +1,10 @@
-package com.example.lab.payment.outbox;
+package com.example.lab.payment.service;
 
 import com.example.lab.payment.domain.Payment;
-import com.example.lab.payment.kafka.PaymentEvent;
+import com.example.lab.payment.domain.PaymentOutbox;
+import com.example.lab.payment.domain.kafka.PaymentEvent;
 import com.example.lab.payment.kafka.PaymentEventPublisher;
+import com.example.lab.payment.repository.PaymentOutboxRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;

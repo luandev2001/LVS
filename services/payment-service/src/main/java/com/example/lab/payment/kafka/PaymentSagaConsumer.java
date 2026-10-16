@@ -1,5 +1,8 @@
 package com.example.lab.payment.kafka;
 
+import com.example.lab.payment.domain.ProcessedSagaEvent;
+import com.example.lab.payment.domain.kafka.PaymentEvent;
+import com.example.lab.payment.repository.ProcessedSagaEventRepository;
 import com.example.lab.payment.service.PaymentService;
 import org.springframework.kafka.annotation.KafkaListener;
 import io.micrometer.observation.annotation.Observed;

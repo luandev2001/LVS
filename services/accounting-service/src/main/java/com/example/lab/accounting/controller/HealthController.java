@@ -1,4 +1,4 @@
-package com.example.lab;
+package com.example.lab.accounting.controller;
 
 import java.time.Instant;
 import java.util.Map;
@@ -10,7 +10,7 @@ public class HealthController {
     @GetMapping("/internal/bootstrap")
     Map<String, Object> bootstrap() {
         return Map.of(
-            "service", "inventory-service",
+            "service", "accounting-service",
             "phase", "PHASE-0",
             "status", "UP",
             "timestamp", Instant.now().toString()

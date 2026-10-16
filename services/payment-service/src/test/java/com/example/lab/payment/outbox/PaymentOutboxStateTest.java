@@ -1,5 +1,6 @@
 package com.example.lab.payment.outbox;
 
+import com.example.lab.payment.domain.PaymentOutbox;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;

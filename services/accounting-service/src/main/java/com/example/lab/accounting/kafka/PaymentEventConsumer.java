@@ -1,7 +1,7 @@
 package com.example.lab.accounting.kafka;
 
 import com.example.lab.accounting.service.AccountingService;
-import com.example.lab.payment.kafka.PaymentEvent;
+import com.example.lab.accounting.domain.kafka.PaymentEvent;
 import io.micrometer.observation.annotation.Observed;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;

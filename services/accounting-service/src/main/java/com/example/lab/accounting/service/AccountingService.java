@@ -4,7 +4,7 @@ import com.example.lab.accounting.domain.*;
 import com.example.lab.accounting.observability.AccountingMetrics;
 import com.example.lab.accounting.repository.*;
 import com.example.lab.accounting.outbox.SagaOutboxService;
-import com.example.lab.payment.kafka.PaymentEvent;
+import com.example.lab.accounting.domain.kafka.PaymentEvent;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

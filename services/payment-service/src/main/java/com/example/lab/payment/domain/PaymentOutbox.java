@@ -1,4 +1,4 @@
-package com.example.lab.payment.outbox;
+package com.example.lab.payment.domain;
 
 import jakarta.persistence.*;
 import lombok.Getter;

@@ -3,9 +3,9 @@ package com.example.lab.payment.service;
 import com.example.lab.payment.domain.GatewayMode;
 import com.example.lab.payment.domain.Payment;
 import com.example.lab.payment.domain.PaymentStatus;
+import com.example.lab.payment.domain.kafka.PaymentEvent;
 import com.example.lab.payment.gateway.SimulatedPaymentGateway;
 import com.example.lab.payment.repository.PaymentRepository;
-import com.example.lab.payment.outbox.PaymentOutboxService;
 import jakarta.transaction.Transactional;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.beans.factory.annotation.Value;
@@ -177,7 +177,7 @@ public class PaymentService {
     }
 
     @Transactional
-    public void handleSagaEvent(com.example.lab.payment.kafka.PaymentEvent event) {
+    public void handleSagaEvent(PaymentEvent event) {
         Payment payment = repository.findByIdForUpdate(event.paymentId()).orElseThrow(() -> new PaymentNotFoundException(event.paymentId()));
         if (payment.getSagaId() == null || event.sagaId() == null || !payment.getSagaId().equals(event.sagaId()))
             return;

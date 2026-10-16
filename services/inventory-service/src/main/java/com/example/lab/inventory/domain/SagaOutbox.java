@@ -1,4 +1,4 @@
-package com.example.lab.inventory.outbox;
+package com.example.lab.inventory.domain;
 
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -38,7 +38,7 @@ public class SagaOutbox {
     protected SagaOutbox() {
     }
 
-    static SagaOutbox pending(String t, String k, String p) {
+    public static SagaOutbox pending(String t, String k, String p) {
         SagaOutbox x = new SagaOutbox();
         x.eventType = t;
         x.messageKey = k;
@@ -49,16 +49,16 @@ public class SagaOutbox {
         return x;
     }
 
-    void processing() {
+    public void processing() {
         status = Status.PROCESSING;
         attempts++;
     }
 
-    void published() {
+    public void published() {
         status = Status.PUBLISHED;
     }
 
-    void failed(String e) {
+    public void failed(String e) {
         status = Status.FAILED;
         lastError = e == null ? null : e.substring(0, Math.min(2000, e.length()));
         availableAt = Instant.now().plusSeconds(2);

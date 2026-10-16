@@ -1,4 +1,4 @@
-package com.example.lab.payment.kafka;
+package com.example.lab.payment.domain.kafka;
 
 import java.math.BigDecimal;
 import java.time.Instant;

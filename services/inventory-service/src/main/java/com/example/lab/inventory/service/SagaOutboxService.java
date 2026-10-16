@@ -1,7 +1,8 @@
-package com.example.lab.inventory.outbox;
+package com.example.lab.inventory.service;
 
+import com.example.lab.inventory.domain.SagaOutbox;
 import com.example.lab.inventory.repository.SagaOutboxRepository;
-import com.example.lab.payment.kafka.PaymentEvent;
+import com.example.lab.inventory.domain.kafka.PaymentEvent;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

@@ -1,20 +1,18 @@
 package com.example.lab.accounting.outbox;
 
+import com.example.lab.accounting.domain.SagaOutbox;
 import com.example.lab.accounting.repository.SagaOutboxRepository;
-import com.example.lab.payment.kafka.PaymentEvent;
+import com.example.lab.accounting.domain.kafka.PaymentEvent;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@RequiredArgsConstructor
 @Service
 public class SagaOutboxService {
     private final SagaOutboxRepository repo;
     private final ObjectMapper mapper;
-
-    public SagaOutboxService(SagaOutboxRepository r, ObjectMapper m) {
-        repo = r;
-        mapper = m;
-    }
 
     @Transactional
     public void enqueue(PaymentEvent e) {

@@ -1,5 +1,6 @@
-package com.example.lab.payment.kafka;
+package com.example.lab.payment.config;
 
+import com.example.lab.payment.domain.kafka.PaymentEvent;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.support.serializer.JsonDeserializer;

@@ -1,5 +1,7 @@
 package com.example.lab.payment.outbox;
 
+import com.example.lab.payment.domain.PaymentOutbox;
+import com.example.lab.payment.repository.PaymentOutboxRepository;
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.stereotype.Component;

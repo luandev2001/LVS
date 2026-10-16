@@ -1,4 +1,4 @@
-package com.example.lab.payment.kafka;
+package com.example.lab.payment.domain;
 
 import jakarta.persistence.*;
 import lombok.Getter;

@@ -3,7 +3,7 @@ package com.example.lab.accounting.service;
 import com.example.lab.accounting.domain.Account;
 import com.example.lab.accounting.domain.JournalEntry;
 import com.example.lab.accounting.outbox.SagaOutboxService;
-import com.example.lab.payment.kafka.PaymentEvent;
+import com.example.lab.accounting.domain.kafka.PaymentEvent;
 import com.example.lab.accounting.observability.AccountingMetrics;
 import com.example.lab.accounting.repository.AccountRepository;
 import com.example.lab.accounting.repository.JournalEntryRepository;

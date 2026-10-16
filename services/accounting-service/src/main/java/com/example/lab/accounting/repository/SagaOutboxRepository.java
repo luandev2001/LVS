@@ -1,6 +1,6 @@
 package com.example.lab.accounting.repository;
 
-import com.example.lab.accounting.outbox.SagaOutbox;
+import com.example.lab.accounting.domain.SagaOutbox;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 

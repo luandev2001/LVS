@@ -1,6 +1,7 @@
 package com.example.lab.payment.kafka;
 
 import com.example.lab.payment.domain.Payment;
+import com.example.lab.payment.domain.kafka.PaymentEvent;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;

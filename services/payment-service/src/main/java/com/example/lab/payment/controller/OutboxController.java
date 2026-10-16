@@ -1,6 +1,6 @@
 package com.example.lab.payment.controller;
 
-import com.example.lab.payment.outbox.PaymentOutbox;
+import com.example.lab.payment.domain.PaymentOutbox;
 import com.example.lab.payment.outbox.PaymentOutboxPublisher;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

@@ -1,5 +1,6 @@
-package com.example.lab.payment.kafka;
+package com.example.lab.payment.repository;
 
+import com.example.lab.payment.domain.ProcessedSagaEvent;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.UUID;

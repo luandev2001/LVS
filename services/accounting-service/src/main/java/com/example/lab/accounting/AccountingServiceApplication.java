@@ -1,4 +1,4 @@
-package com.example.lab;
+package com.example.lab.accounting;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

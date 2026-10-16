@@ -1,6 +1,6 @@
-package com.example.lab.inventory.kafka;
+package com.example.lab.inventory.config;
 
-import com.example.lab.payment.kafka.PaymentEvent;
+import com.example.lab.inventory.domain.kafka.PaymentEvent;
 import org.apache.kafka.clients.consumer.*;
 import org.apache.kafka.clients.producer.*;
 import org.apache.kafka.common.serialization.*;

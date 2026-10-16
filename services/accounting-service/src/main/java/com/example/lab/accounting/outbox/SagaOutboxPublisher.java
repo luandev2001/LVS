@@ -1,8 +1,10 @@
 package com.example.lab.accounting.outbox;
 
+import com.example.lab.accounting.domain.SagaOutbox;
 import com.example.lab.accounting.repository.SagaOutboxRepository;
-import com.example.lab.payment.kafka.PaymentEvent;
+import com.example.lab.accounting.domain.kafka.PaymentEvent;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -12,23 +14,18 @@ import org.springframework.transaction.support.TransactionTemplate;
 import java.time.Instant;
 import java.util.*;
 
+@RequiredArgsConstructor
 @Component
 public class SagaOutboxPublisher {
     final SagaOutboxRepository repo;
     final KafkaTemplate<String, PaymentEvent> kafka;
     final ObjectMapper mapper;
     final TransactionTemplate tx;
-    final int batch;
-    final long staleMs;
 
-    public SagaOutboxPublisher(SagaOutboxRepository r, KafkaTemplate<String, PaymentEvent> k, ObjectMapper m, org.springframework.transaction.PlatformTransactionManager tm, @Value("${saga.outbox.batch-size:50}") int b, @Value("${saga.outbox.stale-processing-ms:10000}") long stale) {
-        repo = r;
-        kafka = k;
-        mapper = m;
-        tx = new TransactionTemplate(tm);
-        batch = b;
-        staleMs = stale;
-    }
+    @Value("${saga.outbox.batch-size:50}")
+    int batch;
+    @Value("${saga.outbox.stale-processing-ms:10000}")
+    final long staleMs;
 
     @Scheduled(fixedDelayString = "${saga.outbox.polling-ms:500}")
     public void poll() {

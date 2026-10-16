@@ -1,4 +1,4 @@
-package com.example.lab.payment.kafka;
+package com.example.lab.payment.config;
 
 import org.apache.kafka.clients.admin.NewTopic;
 import org.springframework.beans.factory.annotation.Value;

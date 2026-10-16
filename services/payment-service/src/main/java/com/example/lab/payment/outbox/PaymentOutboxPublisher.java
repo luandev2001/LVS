@@ -1,7 +1,10 @@
 package com.example.lab.payment.outbox;
 
-import com.example.lab.payment.kafka.PaymentEvent;
+import com.example.lab.payment.domain.PaymentOutbox;
+import com.example.lab.payment.domain.kafka.PaymentEvent;
+import com.example.lab.payment.repository.PaymentOutboxRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -12,35 +15,23 @@ import java.time.Instant;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+@RequiredArgsConstructor
 @Component
 public class PaymentOutboxPublisher {
     private final PaymentOutboxRepository repository;
     private final KafkaTemplate<String, PaymentEvent> kafkaTemplate;
     private final ObjectMapper objectMapper;
     private final TransactionTemplate transactionTemplate;
-    private final int batchSize;
-    private final int concurrency;
-    private final long staleProcessingMs;
-    private final boolean simulateCrashAfterSend;
-    private final AtomicInteger runningWorkers = new AtomicInteger();
 
-    public PaymentOutboxPublisher(PaymentOutboxRepository repository,
-                                  KafkaTemplate<String, PaymentEvent> kafkaTemplate,
-                                  ObjectMapper objectMapper,
-                                  org.springframework.transaction.PlatformTransactionManager transactionManager,
-                                  @Value("${payment.outbox.batch-size:50}") int batchSize,
-                                  @Value("${payment.outbox.publisher-concurrency:2}") int concurrency,
-                                  @Value("${payment.outbox.stale-processing-ms:10000}") long staleProcessingMs,
-                                  @Value("${payment.outbox.simulate-crash-after-send:false}") boolean simulateCrashAfterSend) {
-        this.repository = repository;
-        this.kafkaTemplate = kafkaTemplate;
-        this.objectMapper = objectMapper;
-        this.transactionTemplate = new TransactionTemplate(transactionManager);
-        this.batchSize = batchSize;
-        this.concurrency = concurrency;
-        this.staleProcessingMs = staleProcessingMs;
-        this.simulateCrashAfterSend = simulateCrashAfterSend;
-    }
+    @Value("${payment.outbox.batch-size:50}")
+    private int batchSize;
+    @Value("${payment.outbox.publisher-concurrency:2}")
+    private int concurrency;
+    @Value("${payment.outbox.stale-processing-ms:10000}")
+    private long staleProcessingMs;
+    @Value("${payment.outbox.simulate-crash-after-send:false}")
+    private boolean simulateCrashAfterSend;
+    private final AtomicInteger runningWorkers = new AtomicInteger();
 
     @Scheduled(fixedDelayString = "${payment.outbox.polling-ms:500}")
     public void poll() {

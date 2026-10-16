@@ -4,6 +4,7 @@ import com.example.lab.inventory.service.InventoryService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micrometer.core.instrument.MeterRegistry;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
@@ -14,6 +15,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+@RequiredArgsConstructor
 @Service
 public class InventoryCacheService {
     private static final String VERSION_PREFIX = "inventory:cache:version:";
@@ -26,27 +28,17 @@ public class InventoryCacheService {
     private final StringRedisTemplate redis;
     private final ObjectMapper objectMapper;
     private final MeterRegistry meterRegistry;
-    private final Duration ttl;
-    private final Duration lockTtl;
-    private final Duration lockWait;
-    private final boolean enabled;
-    private final boolean invalidationEnabled;
 
-    public InventoryCacheService(StringRedisTemplate redis, ObjectMapper objectMapper, MeterRegistry meterRegistry,
-                                 @Value("${cache.inventory.ttl-seconds:30}") long ttlSeconds,
-                                 @Value("${cache.inventory.lock-ttl-ms:5000}") long lockTtlMs,
-                                 @Value("${cache.inventory.lock-wait-ms:2000}") long lockWaitMs,
-                                 @Value("${cache.inventory.enabled:true}") boolean enabled,
-                                 @Value("${cache.inventory.invalidation-enabled:true}") boolean invalidationEnabled) {
-        this.redis = redis;
-        this.objectMapper = objectMapper;
-        this.meterRegistry = meterRegistry;
-        this.ttl = Duration.ofSeconds(ttlSeconds);
-        this.lockTtl = Duration.ofMillis(lockTtlMs);
-        this.lockWait = Duration.ofMillis(lockWaitMs);
-        this.enabled = enabled;
-        this.invalidationEnabled = invalidationEnabled;
-    }
+    @Value("${cache.inventory.ttl-seconds:30s}")
+    private final Duration ttl;
+    @Value("${cache.inventory.lock-ttl-ms:5000ms}")
+    private final Duration lockTtl;
+    @Value("${cache.inventory.lock-wait-ms:2000ms}")
+    private final Duration lockWait;
+    @Value("${cache.inventory.enabled:true}")
+    private final boolean enabled;
+    @Value("${cache.inventory.invalidation-enabled:true}")
+    private final boolean invalidationEnabled;
 
     public Optional<InventoryService.CachedInventoryPage> get(String key) {
         if (!enabled) return Optional.empty();

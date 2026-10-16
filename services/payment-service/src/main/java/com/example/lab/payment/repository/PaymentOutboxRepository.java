@@ -1,5 +1,6 @@
-package com.example.lab.payment.outbox;
+package com.example.lab.payment.repository;
 
+import com.example.lab.payment.domain.PaymentOutbox;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;

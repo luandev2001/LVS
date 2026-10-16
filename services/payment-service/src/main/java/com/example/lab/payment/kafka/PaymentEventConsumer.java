@@ -1,5 +1,7 @@
 package com.example.lab.payment.kafka;
 
+import com.example.lab.payment.domain.ProcessedPaymentEvent;
+import com.example.lab.payment.domain.kafka.PaymentEvent;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.annotation.RetryableTopic;
