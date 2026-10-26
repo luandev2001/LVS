@@ -30,15 +30,15 @@ public class InventoryCacheService {
     private final MeterRegistry meterRegistry;
 
     @Value("${cache.inventory.ttl-seconds:30s}")
-    private final Duration ttl;
+    private Duration ttl;
     @Value("${cache.inventory.lock-ttl-ms:5000ms}")
-    private final Duration lockTtl;
+    private Duration lockTtl;
     @Value("${cache.inventory.lock-wait-ms:2000ms}")
-    private final Duration lockWait;
+    private Duration lockWait;
     @Value("${cache.inventory.enabled:true}")
-    private final boolean enabled;
+    private boolean enabled;
     @Value("${cache.inventory.invalidation-enabled:true}")
-    private final boolean invalidationEnabled;
+    private boolean invalidationEnabled;
 
     public Optional<InventoryService.CachedInventoryPage> get(String key) {
         if (!enabled) return Optional.empty();

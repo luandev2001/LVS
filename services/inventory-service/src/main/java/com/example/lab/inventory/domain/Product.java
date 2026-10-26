@@ -30,13 +30,6 @@ public class Product {
     @Column(nullable = false)
     private Instant createdAt;
 
-    public Product(String sku, String name, String categoryCode) {
-        this.sku = sku;
-        this.name = name;
-        this.categoryCode = categoryCode;
-        this.createdAt = Instant.now();
-    }
-
     @PrePersist
     void prePersist() {
         if (createdAt == null) createdAt = Instant.now();

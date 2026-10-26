@@ -35,9 +35,6 @@ public class SagaOutbox {
 
     public enum Status {PENDING, PROCESSING, PUBLISHED, FAILED}
 
-    protected SagaOutbox() {
-    }
-
     public static SagaOutbox pending(String t, String k, String p) {
         SagaOutbox x = new SagaOutbox();
         x.eventType = t;

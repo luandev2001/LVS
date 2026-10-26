@@ -35,13 +35,6 @@ public class Inventory {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
-    public Inventory(Product product, String warehouseCode, long quantity) {
-        this.product = product;
-        this.warehouseCode = warehouseCode;
-        this.quantity = quantity;
-        this.updatedAt = Instant.now();
-    }
-
     @PrePersist
     @PreUpdate
     void touch() {
