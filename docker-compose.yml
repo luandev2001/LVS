@@ -38,8 +38,12 @@ services:
     image: grafana/grafana:12.2.0
     container_name: lab-grafana
     ports: ["3000:3000"]
+#    environment:
+#      GF_SECURITY_ADMIN_USER: "${GRAFANA_ADMIN_USER}"
+#      GF_SECURITY_ADMIN_PASSWORD: "${GRAFANA_ADMIN_PASSWORD}"
     volumes:
       - ./observability/grafana/provisioning:/etc/grafana/provisioning:ro
+#      - grafana-data:/var/lib/grafana
 
   otel-collector:
     image: otel/opentelemetry-collector-contrib:0.136.0
@@ -96,6 +100,20 @@ services:
       POSTGRES_PASSWORD: lab
     ports: ["5436:5432"]
     volumes: [payment-db-data:/var/lib/postgresql]
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.51.0
+    container_name: lab-cadvisor
+#    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8085:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker:/var/lib/docker:ro
+      - /dev/disk:/dev/disk:ro
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
 
 volumes:
   redis-data:

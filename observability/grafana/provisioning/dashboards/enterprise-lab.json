@@ -1,77 +1,9 @@
 {
   "title": "Enterprise Backend Simulation Lab",
   "schemaVersion": 39,
-  "version": 2,
-  "refresh": "5s",
+  "version": 3,
+  "refresh": "15s",
   "panels": [
-    {
-      "type": "timeseries",
-      "title": "Outbox Pending",
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 0,
-        "y": 0
-      },
-      "targets": [
-        {
-          "expr": "payment_outbox_pending",
-          "legendFormat": "pending"
-        }
-      ]
-    },
-    {
-      "type": "timeseries",
-      "title": "Outbox Processing / Failed",
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 0
-      },
-      "targets": [
-        {
-          "expr": "payment_outbox_processing",
-          "legendFormat": "processing"
-        },
-        {
-          "expr": "payment_outbox_failed",
-          "legendFormat": "failed"
-        }
-      ]
-    },
-    {
-      "type": "timeseries",
-      "title": "Accounting Journal Creation",
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 0,
-        "y": 8
-      },
-      "targets": [
-        {
-          "expr": "rate(accounting_journal_created_total[1m])",
-          "legendFormat": "journals/sec"
-        }
-      ]
-    },
-    {
-      "type": "timeseries",
-      "title": "Accounting Kafka Event Processing",
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 8
-      },
-      "targets": [
-        {
-          "expr": "rate(accounting_kafka_events_received_total[1m])",
-          "legendFormat": "events/sec"
-        }
-      ]
-    },
     {
       "type": "timeseries",
       "title": "JVM Memory Used",
@@ -83,10 +15,17 @@
       },
       "targets": [
         {
-          "expr": "jvm_memory_used_bytes",
-          "legendFormat": "{{area}}"
+          "expr": "sum by (application, area) ( jvm_memory_used_bytes )",
+          "legendFormat": "{{application}} - {{area}}",
+          "refId": "A"
         }
-      ]
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes"
+        },
+        "overrides": []
+      }
     },
     {
       "type": "timeseries",
@@ -100,7 +39,8 @@
       "targets": [
         {
           "expr": "hikaricp_connections_active",
-          "legendFormat": "{{pool}}"
+          "legendFormat": "{{pool}}",
+          "refId": "A"
         }
       ]
     },
@@ -122,7 +62,7 @@
       ],
       "fieldConfig": {
         "defaults": {
-          "unit": "req/s"
+          "unit": "reqps"
         },
         "overrides": []
       }
@@ -145,7 +85,7 @@
       ],
       "fieldConfig": {
         "defaults": {
-          "unit": "seconds"
+          "unit": "s"
         },
         "overrides": []
       }
@@ -168,7 +108,7 @@
       ],
       "fieldConfig": {
         "defaults": {
-          "unit": "errors/s"
+          "unit": "reqps"
         },
         "overrides": []
       }
@@ -191,7 +131,7 @@
       ],
       "fieldConfig": {
         "defaults": {
-          "unit": "seconds/s"
+          "unit": "s"
         },
         "overrides": []
       }
@@ -214,7 +154,7 @@
       ],
       "fieldConfig": {
         "defaults": {
-          "unit": "connections"
+          "unit": "short"
         },
         "overrides": []
       }
@@ -237,7 +177,7 @@
       ],
       "fieldConfig": {
         "defaults": {
-          "unit": "listeners/s"
+          "unit": "ops"
         },
         "overrides": []
       }
@@ -254,13 +194,15 @@
       "targets": [
         {
           "expr": "sum(rate(inventory_cache_hit_total[5m])) / clamp_min(sum(rate(inventory_cache_hit_total[5m])) + sum(rate(inventory_cache_miss_total[5m])), 1e-9)",
-          "legendFormat": "{{application}}",
+          "legendFormat": "Hit Rate",
           "refId": "A"
         }
       ],
       "fieldConfig": {
         "defaults": {
-          "unit": "ratio"
+          "unit": "percentunit",
+          "min": 0,
+          "max": 1
         },
         "overrides": []
       }
@@ -283,7 +225,85 @@
       ],
       "fieldConfig": {
         "defaults": {
-          "unit": "tasks"
+          "unit": "short"
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Container CPU Usage",
+      "description": "CPU usage per Docker container. 100% represents one fully utilized CPU core.",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 52
+      },
+      "targets": [
+        {
+          "expr": "100 * sum by (name) (rate(container_cpu_usage_seconds_total{image!=\"\",name!=\"\"}[5m]))",
+          "legendFormat": "{{name}}",
+          "refId": "A",
+          "interval": "15s"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Container Memory Usage",
+      "description": "Container working set memory in MiB.",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 52
+      },
+      "targets": [
+        {
+          "expr": "sum by (name) (container_memory_working_set_bytes{image!=\"\",name!=\"\"}) / 1024 / 1024",
+          "legendFormat": "{{name}}",
+          "refId": "A",
+          "interval": "15s"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "mbytes",
+          "min": 0
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Container Memory Limit",
+      "description": "Configured container memory limit in MiB. A missing series can mean no explicit limit is configured or the metric is unavailable.",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 60
+      },
+      "targets": [
+        {
+          "expr": "max by (name) (container_spec_memory_limit_bytes{image!=\"\",name!=\"\"}) / 1024 / 1024",
+          "legendFormat": "{{name}}",
+          "refId": "A",
+          "interval": "15s"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "mbytes",
+          "min": 0
         },
         "overrides": []
       }
