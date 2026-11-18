@@ -2,7 +2,7 @@ CREATE TABLE account (
     id BIGSERIAL PRIMARY KEY,
     code VARCHAR(50) NOT NULL UNIQUE,
     name VARCHAR(200) NOT NULL,
-    currency CHAR(3) NOT NULL,
+    currency VARCHAR(3) NOT NULL,
     active BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
@@ -13,7 +13,7 @@ CREATE TABLE journal_entry (
     payment_id UUID NOT NULL,
     entry_type VARCHAR(50) NOT NULL,
     description VARCHAR(500) NOT NULL,
-    currency CHAR(3) NOT NULL,
+    currency VARCHAR(3) NOT NULL,
     occurred_at TIMESTAMPTZ NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
@@ -24,7 +24,7 @@ CREATE TABLE journal_line (
     account_id BIGINT NOT NULL REFERENCES account(id),
     side VARCHAR(10) NOT NULL,
     amount NUMERIC(19,4) NOT NULL,
-    currency CHAR(3) NOT NULL,
+    currency VARCHAR(3) NOT NULL,
     CONSTRAINT ck_journal_line_side CHECK (side IN ('DEBIT','CREDIT')),
     CONSTRAINT ck_journal_line_amount CHECK (amount > 0)
 );

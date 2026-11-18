@@ -5,7 +5,7 @@ export const options = {
   scenarios: {
     inventory_baseline: {
       executor: 'constant-vus',
-      vus: 10,
+      vus: 100,
       duration: '60s',
     },
   },
@@ -24,5 +24,5 @@ export default function () {
     'response has content': (r) => r.body && r.body.length > 0,
   });
 
-  sleep(0.1);
+//  sleep(0.1);
 }

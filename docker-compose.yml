@@ -105,8 +105,12 @@ services:
     image: gcr.io/cadvisor/cadvisor:v0.51.0
     container_name: lab-cadvisor
 #    restart: unless-stopped
-    ports:
-      - "127.0.0.1:8085:8080"
+    # 1. Dùng câu lệnh command để ép cAdvisor chạy ở cổng 8099 nội bộ
+    command:
+      - '-port=8099'
+    # 2. Hoặc bạn muốn an tâm hơn, có thể dùng thuộc tính expose (chỉ mở cho Prometheus thấy, máy ngoài không thấy)
+    expose:
+      - "8099"
     volumes:
       - /:/rootfs:ro
       - /var/run:/var/run:ro

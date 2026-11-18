@@ -15,7 +15,7 @@ import java.time.Instant;
 import java.util.*;
 
 @RequiredArgsConstructor
-@Component
+//@Component
 public class SagaOutboxPublisher {
     final SagaOutboxRepository repo;
     final KafkaTemplate<String, PaymentEvent> kafka;

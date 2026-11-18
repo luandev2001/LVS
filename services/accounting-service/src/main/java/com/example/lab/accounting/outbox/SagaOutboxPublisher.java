@@ -25,7 +25,7 @@ public class SagaOutboxPublisher {
     @Value("${saga.outbox.batch-size:50}")
     int batch;
     @Value("${saga.outbox.stale-processing-ms:10000}")
-    final long staleMs;
+    long staleMs;
 
     @Scheduled(fixedDelayString = "${saga.outbox.polling-ms:500}")
     public void poll() {

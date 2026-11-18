@@ -1,7 +1,7 @@
 import http from 'k6/http';
 import { check } from 'k6';
 
-export const options = { vus: 10, duration: '60s' };
+export const options = { vus: 1000, duration: '60s' };
 
 export default function () {
   const base = __ENV.BASE_URL || 'http://localhost:8081';
