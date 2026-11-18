@@ -18,7 +18,7 @@ import java.util.*;
 //@Component
 public class SagaOutboxPublisher {
     final SagaOutboxRepository repo;
-    final KafkaTemplate<String, PaymentEvent> kafka;
+    final KafkaTemplate<String, String> kafka;
     final ObjectMapper mapper;
     final TransactionTemplate tx;
 
@@ -38,8 +38,7 @@ public class SagaOutboxPublisher {
         if (rows == null) return;
         for (SagaOutbox r : rows) {
             try {
-                PaymentEvent e = mapper.readValue(r.getPayload(), PaymentEvent.class);
-                kafka.send("payment.events.v1", r.getMessageKey(), e).get();
+                kafka.send("payment.events.v1", r.getMessageKey(), r.getPayload()).get();
                 tx.executeWithoutResult(s -> {
                     SagaOutbox x = repo.findById(r.getId()).orElseThrow();
                     x.published();

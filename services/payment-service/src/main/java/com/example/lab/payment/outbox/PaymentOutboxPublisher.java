@@ -19,7 +19,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Component
 public class PaymentOutboxPublisher {
     private final PaymentOutboxRepository repository;
-    private final KafkaTemplate<String, PaymentEvent> kafkaTemplate;
+    private final KafkaTemplate<String, String> kafkaTemplate;
     private final ObjectMapper objectMapper;
     private final TransactionTemplate transactionTemplate;
 
@@ -61,8 +61,7 @@ public class PaymentOutboxPublisher {
 
     private void publish(PaymentOutbox row) {
         try {
-            PaymentEvent event = objectMapper.readValue(row.getPayload(), PaymentEvent.class);
-            kafkaTemplate.send(row.getTopic(), row.getMessageKey(), event).get();
+            kafkaTemplate.send(row.getTopic(), row.getMessageKey(), row.getPayload()).get();
             if (simulateCrashAfterSend) {
                 throw new SimulatedPublisherCrash("simulated crash after Kafka send and before outbox status update");
             }

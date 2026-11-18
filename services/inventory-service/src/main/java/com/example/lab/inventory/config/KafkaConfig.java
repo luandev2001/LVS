@@ -1,6 +1,6 @@
 package com.example.lab.inventory.config;
 
-import com.example.lab.inventory.domain.kafka.PaymentEvent;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.apache.kafka.clients.consumer.*;
 import org.apache.kafka.clients.producer.*;
 import org.apache.kafka.common.serialization.*;
@@ -14,30 +14,35 @@ import java.util.*;
 @Configuration
 public class KafkaConfig {
     @Bean
-    ConsumerFactory<String, PaymentEvent> inventoryConsumerFactory(@Value("${spring.kafka.bootstrap-servers:localhost:9092}") String b) {
+    ConsumerFactory<String, String> inventoryConsumerFactory(@Value("${spring.kafka.bootstrap-servers:localhost:9092}") String b,
+                                                             MeterRegistry meterRegistry) {
         Map<String, Object> p = new HashMap<>();
         p.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, b);
         p.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
         p.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
-        JsonDeserializer<PaymentEvent> d = new JsonDeserializer<>(PaymentEvent.class);
-        d.addTrustedPackages("com.example.lab.payment.kafka");
-        d.setUseTypeHeaders(false);
-        return new DefaultKafkaConsumerFactory<>(p, new StringDeserializer(), d);
+
+        DefaultKafkaConsumerFactory<String, String> factory = new DefaultKafkaConsumerFactory<>(p, new StringDeserializer(), new StringDeserializer());
+        factory.addListener(new MicrometerConsumerListener<>(meterRegistry));
+        return factory;
     }
 
     @Bean
-    ProducerFactory<String, PaymentEvent> inventoryProducerFactory(@Value("${spring.kafka.bootstrap-servers:localhost:9092}") String b) {
+    ProducerFactory<String, String> inventoryProducerFactory(@Value("${spring.kafka.bootstrap-servers:localhost:9092}") String b,
+                                                             MeterRegistry meterRegistry) {
         Map<String, Object> p = new HashMap<>();
         p.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, b);
         p.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-        p.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
+        p.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         p.put(ProducerConfig.ACKS_CONFIG, "all");
         p.put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, true);
-        return new DefaultKafkaProducerFactory<>(p);
+
+        DefaultKafkaProducerFactory<String, String> factory = new DefaultKafkaProducerFactory<>(p);
+        factory.addListener(new MicrometerProducerListener<>(meterRegistry));
+        return factory;
     }
 
     @Bean
-    KafkaTemplate<String, PaymentEvent> inventoryKafkaTemplate(ProducerFactory<String, PaymentEvent> f) {
+    KafkaTemplate<String, String> inventoryKafkaTemplate(ProducerFactory<String, String> f) {
         return new KafkaTemplate<>(f);
     }
 }
